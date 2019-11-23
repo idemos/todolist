@@ -3,18 +3,18 @@ import Main from './Main';
 
 
 
-class Modal extends Main {
-// class Modal extends React.Component {
+//class Modal extends Main {
+class Modal extends React.Component {
 //function Modal(props) {
 	constructor(props){
 		super(props);
-		this.state = {}
+		//this.state = {}
 	}
 
 	handleClick(e){
 		// (new Main).createUserLocal(e);
 		// this.createUserLocal(e);
-		this.createUser(e);
+		(new Main).createUser(e);
 	}
 
 	render(){

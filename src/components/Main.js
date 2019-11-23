@@ -15,8 +15,6 @@ class Main extends React.Component {
 
 	constructor(props) {
 
-		const locale = true;
-		
 		super(props);
 		this.state = {
 			isLoading: true,

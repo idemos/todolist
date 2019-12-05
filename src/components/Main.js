@@ -1,14 +1,12 @@
 import React from 'react';
+import Modal from './Modal'
+import SearchBar from './SearchBar'
+import UserCard from './UserCard'
 
-/*
-const now = () => {
-	var today = new Date();
-	var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-	var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-	var dateTime = date+' '+time;
-	return dateTime;
-}
-*/
+import '../assets/css/Main.css'
+
+import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
+
 
 class Main extends React.Component {
 
@@ -21,6 +19,7 @@ class Main extends React.Component {
 			users: [],
 			error: null,
 			local: true,
+			searchText: ''
 		}
 		
 		//this.createUserApi = this.createUserApi.bind(this);
@@ -29,8 +28,6 @@ class Main extends React.Component {
 
 
 	componentDidMount() {
-
-
 
 		if(this.state.local === true){
 			console.log('fetch local');
@@ -42,24 +39,6 @@ class Main extends React.Component {
 		
 	}
 
-/*
-	componentWillMount(){
-
-    	if(this.state.local === true){
-    		this.fetchUsersLocal()
-    	}else{
-    		this.fetchUsersApi()
-    	}
-  	}
-   	componentDidUpdate(){
-    	
-    	if(this.state.local === true){
-    		this.fetchUsersLocal()
-    	}else{
-    		this.fetchUsersApi()
-    	}
-  	}
-*/
 
 	fetchUsersLocal(){
 		
@@ -90,9 +69,7 @@ class Main extends React.Component {
 */
 		.then(response => response.json())
       	// ...then we update the users state
-      	.then(datas =>
-          this.setState({
-          	prevState: datas,
+      	.then(datas => this.setState({
             users: datas,
             isLoading: false
           }),
@@ -110,6 +87,35 @@ class Main extends React.Component {
 			this.createUserLocal();
 		}else{
 			this.createUserApi();
+		}
+	}
+
+
+	deleteUser = (e,index) => {
+
+		console.log(e, index);
+		
+		if(this.state.local === true){
+			this.deleteUserLocal(index);
+		}else{
+			this.deleteUserApi();
+		}
+
+	}
+
+
+	deleteUserLocal(index){
+		
+		var aUser = JSON.parse(localStorage.getItem('user_table')) || [];
+
+
+		aUser.splice(index, 1);
+
+		if ("localStorage" in window) {
+			localStorage.setItem('user_table',JSON.stringify(aUser));
+			this.fetchUsersLocal();
+		}else{
+			console.error('NON presente il LOCAL storage');
 		}
 	}
 
@@ -148,10 +154,6 @@ class Main extends React.Component {
 			email: email
 		}
 
-		console.log('Posting request to createUser...');
-		console.log(user);
-		console.log(JSON.stringify(user));
-
 		await fetch('http://localhost/reactjs/index.php', {
 			method: 'post',
 			body: JSON.stringify(user)
@@ -164,40 +166,68 @@ class Main extends React.Component {
 	}
 
 
+	searchText(e){
+		
+		const val = e.target.value;
+		console.log(val);
+		
+		this.setState({
+			searchText: val
+		});
+	}
+
+
   	render() {
 
-	    const { isLoading, users, error, dateTime } = this.state;
+	    const { isLoading, users, error, dateTime, searchText } = this.state;
 
+	    const style_useradd = {
+	    	marginTop:'10px',
+	    	marginBottom:'10px',
+	    	display: 'grid',
+
+	    }
+
+
+	    //const {users, searchText} = this.state;
+		const usersList = users.filter(oUser => {
+			return oUser.username.toLowerCase().includes(searchText);
+		});
+
+	    
 	    return (
-	      <main className="col-md-8 main" id={this.props.id} name={this.props.id}>
-	        <h1 className="">Utenti {dateTime}
-		        <button className="btn btn-success float-left addUser">
-					<span className="fa fa-plus"></span>
-		        </button>
-	        </h1>
-
-	        {error ? <p>{error.message}</p> : null}
-
-	        {!isLoading ? (
-	          users.map(user => {
-	            var { id, username, name, email } = user;
-	            return (
-	              <section key={id}>
-	                <p>
-	                Name: {name}<br />
-	                userName: {username}<br />
-	                Email Address: {email}
-	                </p>
-	                <hr />
-	              </section>
-	            );
-	          })
-	        // If there is a delay in data, let's let the user know it's loading
-	        ) : (!error ? null :(
-	          <h3>Loading...</h3>
-	          )
-	        )}
-	      </main>
+	    	
+	      	<main className="col-md-8 col-lg-8 main" id={this.props.id} name={this.props.id}>
+      	        <SearchBar  
+      	        	searchText={(e) => this.searchText(e)} 
+      	        	placeholder="what are you looking for?"
+      	        />
+      	        
+      	        <Link to="/useradd" style={style_useradd}>
+      		        <button className="btn btn-success btn-block float-left user-add">
+      					<span className="fa fa-plus"></span> add user
+      		        </button>
+      		    </Link>
+      	        
+      
+      	        {error ? <p>{error.message}</p> : null}
+      
+      	        {!isLoading ? 
+      	        	(
+	      	          	usersList.map((user,index) => {
+		      	            var { username, email } = user;
+		      	            return (      	            	
+		      	            	<UserCard key={index} deleteUser={this.deleteUser} index={index} >
+			      	                Name: {username}<br />
+		      	                	Email Address: {email}
+		      	              	</UserCard>
+		      	            );
+	      	          	})
+	      	        // If there is a delay in data, let's let the user know it's loading
+	      	        ) : (!error ? null :(<h3>Loading...</h3>))
+      	    	}
+      	    </main>
+	      	
 	    );
   	}
 }

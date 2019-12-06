@@ -14,6 +14,7 @@ class Modal extends React.Component {
 	handleClick(e){
 		// (new Main).createUserLocal(e);
 		// this.createUserLocal(e);
+		// this.createUserLocal(e);
 		(new Main).createUser(e);
 	}
 

@@ -3,13 +3,15 @@ import Modal from './Modal'
 import SearchBar from './SearchBar'
 import UserCard from './UserCard'
 
+import OrderByName from './OrderBy/OrderByName'
+import OrderByEmail from './OrderBy/OrderByEmail'
+
 import '../assets/css/Main.css'
 
 import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
 
 
 class Main extends React.Component {
-
 
 	constructor(props) {
 
@@ -22,8 +24,8 @@ class Main extends React.Component {
 			searchText: ''
 		}
 		
-		//this.createUserApi = this.createUserApi.bind(this);
-        //this.createUserLocal = this.createUserLocal.bind(this);
+		//this.orderByEmail = this.orderByEmail.bind(this);
+        //this.orderByName = this.orderByName.bind(this);
 	}
 
 
@@ -60,24 +62,31 @@ class Main extends React.Component {
             console.error(response.status);
           	if (response.status !== 200) {
               	// make the promise be rejected if we didn't get a 200 response
+              	console.log('fetch (0)then NOT 200');
               	throw new Error("Not 200 response")
           	} else {
-                console.error('response',response);
+                console.log('fetch (0)then');
                 return response.json();
           	}
       	})
 */
-		.then(response => response.json())
+		.then(response => {
+		
+			response.json();
+			console.log('fetch (1)then');
+		})
       	// ...then we update the users state
-      	.then(datas => this.setState({
-            users: datas,
-            isLoading: false
-          }),
+      	.then(datas => {
 
-          console.log('fetch then then')
-      )
-      // Catch any errors we hit and update the app
-      .catch(error => this.setState({ error, isLoading: false }));
+      		this.setState({
+            	users: datas,
+            	isLoading: false
+          	});
+
+          	console.log('fetch (2)then');
+        })
+      	// Catch any errors we hit and update the app
+      	.catch(error => this.setState({ error, isLoading: false }));
   	}
 
 
@@ -176,6 +185,49 @@ class Main extends React.Component {
 		});
 	}
 
+	orderByEmail = e => {
+		
+		if(e.target.value !== ''){
+
+			const combobox = e.target.value;
+			const users = this.state.users;
+			const userSorted = users.sort(function(a, b){
+
+				console.log(a);
+				console.log(b);
+				
+				var emailA = a.email.toUpperCase(); // ignora maiuscole e minuscole
+				var emailB = b.email.toUpperCase(); // ignora maiuscole e minuscole
+				if (emailA < emailB) { return (combobox==='0' ? -1 : 1); }
+				if (emailA > emailB) { return (combobox==='0' ? 1 : -1); }
+				// i nomi devono essere uguali
+				return 0;
+			});
+
+			this.setState({users: userSorted});
+		}
+	}
+
+	orderByName = e => {
+		
+		if(e.target.value !== ''){
+
+			const combobox = e.target.value;
+			const users = this.state.users;
+			const userSorted = users.sort(function(a, b){
+				
+				var usernameA = a.username.toUpperCase(); // ignora maiuscole e minuscole
+				var usernameB = b.username.toUpperCase(); // ignora maiuscole e minuscole
+				if (usernameA < usernameB) { return (combobox==='0' ? -1 : 1); }
+				if (usernameA > usernameB) { return (combobox==='0' ? 1 : -1); }
+				// i nomi devono essere uguali
+				return 0;
+			});
+
+			this.setState({users: userSorted});
+		}	
+	}
+
 
   	render() {
 
@@ -198,6 +250,15 @@ class Main extends React.Component {
 	    return (
 	    	
 	      	<main className="col-md-8 col-lg-8 main" id={this.props.id} name={this.props.id}>
+		    	<div className="row">
+			    	<div className="col-md-6 col-lg-6">
+			      		<OrderByEmail handlerOrderByEmail={(e) => this.orderByEmail(e)} default="Ordina per email" />
+			      	</div>
+			      	<div className="col-md-6 col-lg-6">
+			      		<OrderByName handlerOrderByName={(e) => this.orderByName(e)} default="Ordina per nome" />
+			      	</div>
+		      	</div>
+
       	        <SearchBar  
       	        	searchText={(e) => this.searchText(e)} 
       	        	placeholder="what are you looking for?"

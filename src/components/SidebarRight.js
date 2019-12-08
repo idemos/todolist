@@ -1,10 +1,12 @@
 import React from 'react';
+import UserCardFavoriteRead from './UserCardFavoriteRead'
 
 
-function SidebarRight(props) {
+const SidebarRight = props => {
   return (
-    <aside className="col-md-2 col-lg-2 sidebar" id={props.id} name={props.id}>
-    sidebarRight
+    <aside className="col-md-4 col-lg-4 sidebar" id={props.id} name={props.id}>
+    {props.userFavoriteCount}
+		<UserCardFavoriteRead count={props.count} />
     </aside>
   );
 }

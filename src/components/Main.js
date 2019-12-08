@@ -2,7 +2,7 @@ import React from 'react';
 import Modal from './Modal'
 import SearchBar from './SearchBar'
 import UserCard from './UserCard'
-
+import SidebarRight from './SidebarRight'
 import OrderByName from './OrderBy/OrderByName'
 import OrderByEmail from './OrderBy/OrderByEmail'
 
@@ -21,7 +21,8 @@ class Main extends React.Component {
 			users: [],
 			error: null,
 			local: true,
-			searchText: ''
+			searchText: '',
+			userFavoriteCount: 0
 		}
 		
 		//this.orderByEmail = this.orderByEmail.bind(this);
@@ -34,6 +35,7 @@ class Main extends React.Component {
 		if(this.state.local === true){
 			console.log('fetch local');
 			this.fetchUsersLocal();
+			this.readFavorite();
 		}else{
 			console.log('fetch Api');
 			this.fetchUsersApi();
@@ -174,6 +176,34 @@ class Main extends React.Component {
 		});
 	}
 
+	addToFavorite(e,email){
+
+		var aUsers_favorite = JSON.parse(localStorage.getItem('user_favorite_table')) || [];
+
+		//const newItem = {email:email,created_at:};
+
+		aUsers_favorite.push(email);
+
+		if ("localStorage" in window) {
+			localStorage.setItem('user_favorite_table',JSON.stringify(aUsers_favorite));
+			this.readFavorite();
+		}else{
+			console.error('NON presente il LOCAL storage');
+		}
+	}
+
+
+	readFavorite = () => {
+
+		const aUsers_favorite = JSON.parse(localStorage.getItem('user_favorite_table')) || [];
+
+		console.log('aUsers_favorite' + aUsers_favorite.length);
+
+		this.setState({
+            usersFavorite: aUsers_favorite,
+            userFavoriteCount: aUsers_favorite.length
+        });
+	}
 
 	searchText(e){
 		
@@ -231,7 +261,7 @@ class Main extends React.Component {
 
   	render() {
 
-	    const { isLoading, users, error, dateTime, searchText } = this.state;
+	    const { isLoading, users, error, dateTime, searchText, userFavoriteCount } = this.state;
 
 	    const style_useradd = {
 	    	marginTop:'10px',
@@ -241,53 +271,67 @@ class Main extends React.Component {
 	    }
 
 
-	    //const {users, searchText} = this.state;
-		const usersList = users.filter(oUser => {
-			return oUser.username.toLowerCase().includes(searchText);
-		});
+		var usersList = [];
+		console.log(users);
+	    if(users.length > 0){
+			usersList = users.filter(oUser => {
+				return oUser.username.toLowerCase().includes(searchText) ||  oUser.email.toLowerCase().includes(searchText);
+			});
+	    }
 
 	    
 	    return (
-	    	
-	      	<main className="col-md-8 col-lg-8 main" id={this.props.id} name={this.props.id}>
-		    	<div className="row">
-			    	<div className="col-md-6 col-lg-6">
-			      		<OrderByEmail handlerOrderByEmail={(e) => this.orderByEmail(e)} default="Ordina per email" />
+	    	<div className="row">
+		      	<main className="col-md-8 col-lg-8 main" id={this.props.id} name={this.props.id}>
+			    	<div className="row">
+				    	<div className="col-md-6 col-lg-6">
+				      		<OrderByEmail handlerOrderByEmail={(e) => this.orderByEmail(e)} default="Ordina per email" />
+				      	</div>
+				      	<div className="col-md-6 col-lg-6">
+				      		<OrderByName handlerOrderByName={(e) => this.orderByName(e)} default="Ordina per nome" />
+				      	</div>
 			      	</div>
-			      	<div className="col-md-6 col-lg-6">
-			      		<OrderByName handlerOrderByName={(e) => this.orderByName(e)} default="Ordina per nome" />
-			      	</div>
-		      	</div>
 
-      	        <SearchBar  
-      	        	searchText={(e) => this.searchText(e)} 
-      	        	placeholder="what are you looking for?"
-      	        />
-      	        
-      	        <Link to="/useradd" style={style_useradd}>
-      		        <button className="btn btn-success btn-block float-left user-add">
-      					<span className="fa fa-plus"></span> add user
-      		        </button>
-      		    </Link>
-      	        
-      
-      	        {error ? <p>{error.message}</p> : null}
-      
-      	        {!isLoading ? 
-      	        	(
-	      	          	usersList.map((user,index) => {
-		      	            var { username, email } = user;
-		      	            return (      	            	
-		      	            	<UserCard key={index} deleteUser={this.deleteUser} index={index} >
-			      	                Name: {username}<br />
-		      	                	Email Address: {email}
-		      	              	</UserCard>
-		      	            );
-	      	          	})
-	      	        // If there is a delay in data, let's let the user know it's loading
-	      	        ) : (!error ? null :(<h3>Loading...</h3>))
-      	    	}
-      	    </main>
+	      	        <SearchBar  
+	      	        	searchText={(e) => this.searchText(e)} 
+	      	        	placeholder="what are you looking for?"
+	      	        />
+	      	        
+	      	        <Link to="/useradd" style={style_useradd}>
+	      		        <button className="btn btn-success btn-block float-left user-add">
+	      					<span className="fa fa-plus"></span> add user
+	      		        </button>
+	      		    </Link>
+	      	        
+	      
+	      	        {error ? <p>{error.message}</p> : null}
+	      
+	      	        {!isLoading ? 
+	      	        	(
+		      	          	usersList.map((user,index) => {
+			      	            var { username, email } = user;
+			      	            return (      	            	
+			      	            	<UserCard 
+				      	            	key={index} 
+				      	            	deleteUser={this.deleteUser} 
+				      	            	addToFavorite={(e)=>this.addToFavorite(e,email)} 
+				      	            	index={index}
+			      	            	>
+				      	                Name: {username}<br />
+			      	                	Email Address: {email}
+			      	              	</UserCard>
+			      	            );
+		      	          	})
+		      	        // If there is a delay in data, let's let the user know it's loading
+		      	        ) : (!error ? null :(<h3>Loading...</h3>))
+	      	    	}
+	      	    </main>
+	      	    <SidebarRight 
+		      	    id="sidebar-right" 
+		      	    name="sidebar-right"
+				    count={userFavoriteCount} 
+	      	    />
+          	</div>
 	      	
 	    );
   	}

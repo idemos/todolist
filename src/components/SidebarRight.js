@@ -7,6 +7,7 @@ const SidebarRight = props => {
     <aside className="col-md-4 col-lg-4 sidebar" id={props.id} name={props.id}>
     {props.userFavoriteCount}
 		<UserCardFavoriteRead count={props.count} />
+		{props.children}
     </aside>
   );
 }

@@ -3,6 +3,7 @@ import Modal from './Modal'
 import SearchBar from './SearchBar'
 import UserCard from './UserCard'
 import SidebarRight from './SidebarRight'
+import Timer from './Timer'
 import OrderByName from './OrderBy/OrderByName'
 import OrderByEmail from './OrderBy/OrderByEmail'
 
@@ -326,11 +327,12 @@ class Main extends React.Component {
 		      	        ) : (!error ? null :(<h3>Loading...</h3>))
 	      	    	}
 	      	    </main>
-	      	    <SidebarRight 
+	      	    <SidebarRight
 		      	    id="sidebar-right" 
 		      	    name="sidebar-right"
-				    count={userFavoriteCount} 
-	      	    />
+				    count={userFavoriteCount} >
+					<Timer />
+	      	    </SidebarRight>
           	</div>
 	      	
 	    );
